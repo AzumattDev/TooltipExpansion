@@ -8,11 +8,7 @@ Appears to be compatible with Jewelcrafting and Epic Loot, but I can't guarantee
 
 ---
 
-![](https://github.com/AzumattDev/TooltipExpansion/blob/main/Thunderstore/icon_jcscroll.png?raw=true)
-
 ![](https://github.com/AzumattDev/TooltipExpansion/blob/main/Thunderstore/jcscroll.gif?raw=true)
-
-![](https://github.com/AzumattDev/TooltipExpansion/blob/main/Thunderstore/icon_elscroll.png?raw=true)
 
 ![](https://github.com/AzumattDev/TooltipExpansion/blob/main/Thunderstore/elscroll.gif?raw=true)
 
