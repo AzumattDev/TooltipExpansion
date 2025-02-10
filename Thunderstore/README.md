@@ -4,7 +4,8 @@
 
 Will not generate a configuration file, as there is no need for one. The mod is designed to be plug and play.
 
-Appears to be compatible with Jewelcrafting and Epic Loot, but I can't guarantee it will work with every mod that changes the tooltips for inventory items.
+Appears to be compatible with Jewelcrafting and Epic Loot, but I can't guarantee it will work with every mod that
+changes the tooltips for inventory items.
 
 ---
 
@@ -21,8 +22,6 @@ Appears to be compatible with Jewelcrafting and Epic Loot, but I can't guarantee
 ***You must have BepInEx installed correctly! I can not stress this enough.***
 
 ### Manual Installation
-
-`Note: (Manual installation is likely how you have to do this on a server, make sure BepInEx is installed on the server correctly)`
 
 1. **Download the latest release of BepInEx.**
 2. **Extract the contents of the zip file to your game's root folder.**

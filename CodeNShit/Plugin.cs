@@ -12,7 +12,7 @@ namespace TooltipExpansion.CodeNShit;
 public class TooltipExpansionPlugin : BaseUnityPlugin
 {
     internal const string ModName = "TooltipExpansion";
-    internal const string ModVersion = "1.0.0";
+    internal const string ModVersion = "1.0.1";
     internal const string Author = "Azumatt";
     private const string ModGUID = $"{Author}.{ModName}";
     internal static string ConnectionError = "";

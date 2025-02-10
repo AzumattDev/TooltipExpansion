@@ -1,6 +1,6 @@
 {
   "name": "TooltipExpansion",
-  "version_number": "1.0.0",
+  "version_number": "1.0.1",
   "website_url": "https://discord.gg/pdHgy6Bsng",
   "description": "Client only mod that adds a scrolling functionality to inventory tooltips. For use when you like your UI huge, your items overpowered and/or your tooltips long.",
   "dependencies": [
