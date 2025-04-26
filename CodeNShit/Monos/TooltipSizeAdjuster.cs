@@ -5,17 +5,17 @@ namespace TooltipExpansion.CodeNShit.Monos;
 
 public class TooltipSizeAdjuster : MonoBehaviour
 {
-    public float maxHeight = 450f;
-    private ScrollRect _scrollRect = null!;
+    public float maxTooltipHeight = Screen.height;
+    private ScrollRect _scrollRectComponent = null!;
     private RectTransform _scrollViewRT = null!;
     private RectTransform _contentRT = null!;
 
     private void Awake()
     {
-        _scrollRect = GetComponent<ScrollRect>();
+        _scrollRectComponent = GetComponent<ScrollRect>();
         _scrollViewRT = GetComponent<RectTransform>();
-        if (_scrollRect != null)
-            _contentRT = _scrollRect.content;
+        if (_scrollRectComponent != null)
+            _contentRT = _scrollRectComponent.content;
     }
 
     private void Start()
@@ -31,6 +31,6 @@ public class TooltipSizeAdjuster : MonoBehaviour
         LayoutRebuilder.ForceRebuildLayoutImmediate(_contentRT);
         float contentHeight = _contentRT.rect.height;
 
-        _scrollViewRT.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, contentHeight < maxHeight ? contentHeight : maxHeight);
+        _scrollViewRT.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, contentHeight < maxTooltipHeight ? contentHeight : maxTooltipHeight);
     }
 }

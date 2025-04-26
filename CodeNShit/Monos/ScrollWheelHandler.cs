@@ -6,15 +6,15 @@ namespace TooltipExpansion.CodeNShit.Monos;
 
 public class TooltipScrollInitializer : MonoBehaviour
 {
-    private bool _initialized;
+    private bool _isInitialized;
 
     private void OnEnable()
     {
-        if (_initialized) return;
+        if (_isInitialized) return;
         // Run the conversion now that the tooltip is active.
         Functions.ConvertTextToScrollView(gameObject);
         Canvas.ForceUpdateCanvases();
-        _initialized = true;
+        _isInitialized = true;
     }
 }
 
@@ -29,6 +29,10 @@ public class ScrollWheelHandler : MonoBehaviour
         {
             TooltipExpansionPluginLogger.LogWarning("ScrollWheelHandler: No ScrollRect found on " + gameObject.name);
         }
+        else
+        {
+            _scrollRect.verticalNormalizedPosition = 1f;
+        }
     }
 
     private void Update()
@@ -38,10 +42,10 @@ public class ScrollWheelHandler : MonoBehaviour
             return;
 
         // Get scroll wheel input regardless of pointer location.
-        float scroll = Input.GetAxis("Mouse ScrollWheel");
-        if (!(Mathf.Abs(scroll) > float.Epsilon)) return;
+        float scrollDelta = Input.GetAxis("Mouse ScrollWheel");
+        if (!(Mathf.Abs(scrollDelta) > float.Epsilon)) return;
         // Adjust the vertical scroll position.
-        float newPos = _scrollRect.verticalNormalizedPosition + scroll * 0.7f;
-        _scrollRect.verticalNormalizedPosition = Mathf.Clamp01(newPos);
+        float newScrollPosition = _scrollRect.verticalNormalizedPosition + scrollDelta * 0.7f;
+        _scrollRect.verticalNormalizedPosition = Mathf.Clamp01(newScrollPosition);
     }
 }

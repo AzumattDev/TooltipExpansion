@@ -8,36 +8,36 @@ namespace TooltipExpansion.CodeNShit;
 
 public static class Functions
 {
-    public static void ConvertTextToScrollView(GameObject tooltip)
+    public static void ConvertTextToScrollView(GameObject tooltipObject)
     {
-        Transform textTransform = Utils.FindChild(tooltip.transform, "Text");
-        if (textTransform == null)
+        Transform tooltipTextTransform = Utils.FindChild(tooltipObject.transform, "Text");
+        if (tooltipTextTransform == null)
         {
             TooltipExpansionPluginLogger.LogWarning("Tooltip does not contain a 'Text' object.");
             return;
         }
 
-        TMP_Text textComponent = textTransform.GetComponent<TMP_Text>();
-        if (textComponent == null)
+        TMP_Text tooltipTextComponent = tooltipTextTransform.GetComponent<TMP_Text>();
+        if (tooltipTextComponent == null)
         {
             TooltipExpansionPluginLogger.LogWarning("Tooltip 'Text' object is missing TMP_Text component.");
             return;
         }
 
-        ContentSizeFitter csf = textComponent.gameObject.GetOrAddComponent<ContentSizeFitter>();
+        ContentSizeFitter csf = tooltipTextComponent.gameObject.GetOrAddComponent<ContentSizeFitter>();
         csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
         // Force an update so we get a proper preferredHeight.
-        textComponent.ForceMeshUpdate();
+        tooltipTextComponent.ForceMeshUpdate();
 
         // Save the original parent (should be Bkg) and the original Text RectTransform.
-        Transform originalParent = textTransform.parent;
-        int siblingIndex = textTransform.GetSiblingIndex();
-        RectTransform originalTextRect = (textTransform as RectTransform)!;
+        Transform originalParentTransform = tooltipTextTransform.parent;
+        int originalSiblingIndex = tooltipTextTransform.GetSiblingIndex();
+        RectTransform originalTextRectTransform = (tooltipTextTransform as RectTransform)!;
 
-        GameObject scrollViewGO = GenScrollView(ref originalParent, originalTextRect, textComponent);
-        RectTransform viewportRT = GenViewPort(ref scrollViewGO, originalTextRect);
-        ScrollRect scrollRect = GenScrollRect(ref scrollViewGO, originalTextRect, ref viewportRT);
+        GameObject scrollViewGO = GenScrollView(ref originalParentTransform, originalTextRectTransform, tooltipTextComponent);
+        RectTransform viewportRT = GenViewPort(ref scrollViewGO, originalTextRectTransform);
+        ScrollRect scrollRect = GenScrollRect(ref scrollViewGO, originalTextRectTransform, ref viewportRT);
         GenScrollBar(ref scrollViewGO, ref scrollRect);
 
 
@@ -46,57 +46,55 @@ public static class Functions
     }
 
 
-    private static GameObject GenScrollView(ref Transform originalParent, RectTransform originalTextRect, TMP_Text textComponent)
+    private static GameObject GenScrollView(ref Transform originalParentTransform, RectTransform originalTextRectTransform, TMP_Text tooltipTextComponent)
     {
         GameObject scrollViewGO = new GameObject("TooltipScrollView", typeof(RectTransform), typeof(ScrollRect), typeof(Image));
 
         // Parent it to the same parent as the original Text and at the same sibling index.
-        scrollViewGO.transform.SetParent(originalParent, false);
-        scrollViewGO.transform.SetSiblingIndex(originalTextRect.GetSiblingIndex());
+        scrollViewGO.transform.SetParent(originalParentTransform, false);
+        scrollViewGO.transform.SetSiblingIndex(originalTextRectTransform.GetSiblingIndex());
         RectTransform scrollViewRect = scrollViewGO.GetComponent<RectTransform>();
 
         // Copy the original Text’s anchors, pivot, and anchored position.
-        scrollViewRect.anchorMin = originalTextRect.anchorMin;
-        scrollViewRect.anchorMax = originalTextRect.anchorMax;
-        scrollViewRect.pivot = originalTextRect.pivot;
-        scrollViewRect.anchoredPosition = originalTextRect.anchoredPosition;
+        scrollViewRect.anchorMin = originalTextRectTransform.anchorMin;
+        scrollViewRect.anchorMax = originalTextRectTransform.anchorMax;
+        scrollViewRect.pivot = originalTextRectTransform.pivot;
+        scrollViewRect.anchoredPosition = originalTextRectTransform.anchoredPosition;
 
-        // Explicitly update the Text object's height.
-        RectTransform textRT = textComponent.rectTransform;
-        textRT.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, textComponent.preferredHeight);
-        LayoutRebuilder.ForceRebuildLayoutImmediate(scrollViewRect);
+        tooltipTextComponent.ForceMeshUpdate();
 
-        float fixedWidth = originalTextRect.rect.width;
-        float fixedHeight = originalTextRect.rect.height;
-        // If the original height is zero (as it is forced to 0 in the base), choose a default height.
-        if (Mathf.Approximately(fixedHeight, 0f))
-            fixedHeight = textComponent.preferredHeight; // you can adjust this value
-        float width = fixedWidth + InventoryGui.instance.m_recipeListScroll.handleRect.rect.width;
-        scrollViewRect.sizeDelta = new Vector2(width + 5, fixedHeight);
+        float wrapWidth = originalTextRectTransform.rect.width;
+        Vector2 pref = tooltipTextComponent.GetPreferredValues(tooltipTextComponent.text, wrapWidth, 0f);
+        float measuredHeight = pref.y;
 
         // Add a LayoutElement so that Bkg’s Vertical Layout Group reserves this space.
         LayoutElement layoutElem = scrollViewGO.AddComponent<LayoutElement>();
-        layoutElem.preferredWidth = width;
-        if (textComponent.preferredHeight > 460f && GuiScaler.m_largeGuiScale >= 1.11f && UITooltip.m_hovered != null && UITooltip.m_hovered.name == "JC_ItemBackground")
+        float scrollbarWidth = InventoryGui.instance?.m_recipeListScroll?.handleRect.rect.width ?? 0f;
+
+        layoutElem.preferredWidth = originalTextRectTransform.rect.width + scrollbarWidth + 5f;
+        scrollViewRect.sizeDelta = new Vector2(originalTextRectTransform.rect.width + scrollbarWidth, 0f);
+
+        if (tooltipTextComponent.preferredHeight > 460f && GuiScaler.m_largeGuiScale >= 1.11f && UITooltip.m_hovered != null && UITooltip.m_hovered.name == "JC_ItemBackground")
         {
             layoutElem.minHeight = 460f;
             layoutElem.preferredHeight = 460f;
         }
         else
         {
-            layoutElem.minHeight = fixedHeight;
-            layoutElem.preferredHeight = textComponent.preferredHeight;
+            layoutElem.preferredHeight = Mathf.Min(measuredHeight, Screen.height * 0.9f); // clamp if needed
+            layoutElem.minHeight = Mathf.Min(measuredHeight, 460f);
         }
 
-        textComponent.ForceMeshUpdate();
 
         Image img = scrollViewGO.GetComponent<Image>();
         img.color = new Color(0, 0, 0, 0.2f);
         img.raycastTarget = true;
+        //LayoutRebuilder.ForceRebuildLayoutImmediate(scrollViewRect);
+        //LayoutRebuilder.ForceRebuildLayoutImmediate(originalParentTransform as RectTransform);
         return scrollViewGO;
     }
 
-    private static RectTransform GenViewPort(ref GameObject scrollRectGo, RectTransform? originalTextRect)
+    private static RectTransform GenViewPort(ref GameObject scrollRectGo, RectTransform? originalTextRectTransform)
     {
         GameObject viewport = new GameObject("TooltipViewport", typeof(RectTransform), typeof(RectMask2D));
         viewport.transform.SetParent(scrollRectGo.transform, false);
@@ -111,18 +109,20 @@ public static class Functions
         return vrt;
     }
 
-    private static ScrollRect GenScrollRect(ref GameObject scrollRectGo, RectTransform originalTextRect, ref RectTransform viewportRT)
+    private static ScrollRect GenScrollRect(ref GameObject scrollRectGo, RectTransform originalTextRectTransform, ref RectTransform viewportRT)
     {
         ScrollRect scrollRect = scrollRectGo.GetComponent<ScrollRect>();
         scrollRect.viewport = viewportRT;
 
         // Reparent the original Text into the viewport.
-        originalTextRect.SetParent(viewportRT, false);
-        scrollRect.content = originalTextRect;
+        originalTextRectTransform.SetParent(viewportRT, false);
+        scrollRect.content = originalTextRectTransform;
         scrollRect.horizontal = false;
         scrollRect.vertical = true;
-        scrollRect.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHide;
-        scrollRect.scrollSensitivity = 40;
+        scrollRect.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHideAndExpandViewport;
+        scrollRect.scrollSensitivity = 50;
+        // Make scroll start at top
+        scrollRect.verticalNormalizedPosition = 1f;
         scrollRect.inertia = true;
         scrollRect.movementType = ScrollRect.MovementType.Clamped;
         scrollRect.onValueChanged.RemoveAllListeners();
@@ -136,13 +136,14 @@ public static class Functions
         newScrollbar.size = 0.4f;
         scrollRect.onValueChanged.AddListener(_ => newScrollbar.size = 0.4f);
         scrollRect.verticalScrollbar = newScrollbar;
+        scrollRect.onValueChanged.Invoke(new Vector2(0, 0));
     }
 
-    private static T GetOrAddComponent<T>(this GameObject go) where T : Component
+    private static T GetOrAddComponent<T>(this GameObject targetGameObject) where T : Component
     {
-        T comp = go.GetComponent<T>();
+        T comp = targetGameObject.GetComponent<T>();
         if (comp == null)
-            comp = go.AddComponent<T>();
+            comp = targetGameObject.AddComponent<T>();
         return comp;
     }
 }

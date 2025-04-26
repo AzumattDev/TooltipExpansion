@@ -1,4 +1,5 @@
-| `Version` | `Update Notes`                                                                               |
-|-----------|----------------------------------------------------------------------------------------------|
-| 1.0.1     | - Tweak the readme to exclude a blerp about servers. My own Live Templates get me sometimes. |
-| 1.0.0     | - Initial Release                                                                            |
+| `Version` | `Update Notes`                                                                                                                                                                       |
+|-----------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.1.0     | - Fix some things with jitter even after scrolling was added when used with other mods. Overall improve the mod to work a bit better. Rename some variables in the code for clarity. |
+| 1.0.1     | - Tweak the readme to exclude a blerp about servers. My own Live Templates get me sometimes.                                                                                         |
+| 1.0.0     | - Initial Release                                                                                                                                                                    |
